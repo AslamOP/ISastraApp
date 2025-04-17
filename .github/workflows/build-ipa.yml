@@ -1,0 +1,46 @@
+name: Build Unsigned IPA (fixed path + curl upload)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.0.app
+
+      - name: List project files
+        run: ls -la I_SastraApp_Final
+
+      - name: Build app for iOS (code signing disabled)
+        run: |
+          xcodebuild clean build \
+            -project I_SastraApp_Final/I_SastraApp_Final.xcodeproj \
+            -scheme I_SastraApp_Final \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package .app into unsigned IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/I_SastraApp_Final.app Payload/
+          zip -r I_SastraApp_Final.ipa Payload
+          mkdir -p output && mv I_SastraApp_Final.ipa output/
+
+      - name: Upload IPA with curl (transfer.sh)
+        run: |
+          echo "Uploading IPA to transfer.sh..."
+          curl --upload-file ./output/I_SastraApp_Final.ipa https://transfer.sh/I_SastraApp_Final.ipa > ipa_url.txt
+          echo "✅ Download your IPA here:"
+          cat ipa_url.txt
