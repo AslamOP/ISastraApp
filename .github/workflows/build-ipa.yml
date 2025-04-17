@@ -17,13 +17,13 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_15.0.app
 
       - name: List project files
-        run: ls -la I_SastraApp_Final
+        run: ls -la ISastraApp
 
       - name: Build app for iOS (code signing disabled)
         run: |
           xcodebuild clean build \
-            -project I_SastraApp_Final/I_SastraApp_Final.xcodeproj \
-            -scheme I_SastraApp_Final \
+            -project ISastraApp/ISastraApp.xcodeproj \
+            -scheme ISastraApp \
             -configuration Release \
             -sdk iphoneos \
             -derivedDataPath build \
@@ -34,13 +34,13 @@ jobs:
       - name: Package .app into unsigned IPA
         run: |
           mkdir -p Payload
-          cp -r build/Build/Products/Release-iphoneos/I_SastraApp_Final.app Payload/
-          zip -r I_SastraApp_Final.ipa Payload
-          mkdir -p output && mv I_SastraApp_Final.ipa output/
+          cp -r build/Build/Products/Release-iphoneos/ISastraApp.app Payload/
+          zip -r ISastraApp.ipa Payload
+          mkdir -p output && mv ISastraApp.ipa output/
 
       - name: Upload IPA with curl (transfer.sh)
         run: |
           echo "Uploading IPA to transfer.sh..."
-          curl --upload-file ./output/I_SastraApp_Final.ipa https://transfer.sh/I_SastraApp_Final.ipa > ipa_url.txt
+          curl --upload-file ./output/ISastraApp.ipa https://transfer.sh/ISastraApp.ipa > ipa_url.txt
           echo "✅ Download your IPA here:"
           cat ipa_url.txt
